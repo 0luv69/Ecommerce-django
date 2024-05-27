@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.shortcuts import render, redirect, HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from .models import *
 
 
 # Create your views here.
 
 
-def login(request):
+def login_page(request):
 
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -48,8 +49,20 @@ def register(request):
         user_obj = User.objects.create(first_name= first_name, last_name= last_name, email = email, username = email)
         user_obj.set_password(password)
         user_obj.save()
+
         messages.success(request, "Success, Now lets see Weather you are real, Check your mail plz")
         return HttpResponseRedirect(request.path_info)
 
-
     return render(request, 'accounts/register.html')
+
+
+def activate_email(request,emailtoken):
+    try:
+        user_profile= Profile.objects.get(email_token=emailtoken) 
+        user_profile.is_email_verified= True
+        user_profile.save()
+    except:
+        return HttpResponse('Sorry but wrong authentation key,.....................................................')
+
+
+    return redirect('/')
